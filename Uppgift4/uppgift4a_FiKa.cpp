@@ -44,36 +44,65 @@ const int ANTAL_BOKSTAVER = 26;  //A-Z
 // Anv�nd exakt de funktionsnamn som finns nedan
 
 // Funktionen berakna_histogram_abs
-void berakna_histogram_abs();
+void berakna_histogram_abs(string text, int nbr_occurences[ANTAL_BOKSTAVER], int ASCII_OFFSET);
 
 // Funktionen skriv_histogram_abs
-void skriv_histogram_abs();
+void skriv_histogram_abs(int nbr_occurences[ANTAL_BOKSTAVER], int ASCII_OFFSET);
 //--------------------------------------------------------
 // Huvudprogram:
 
 int main()
 {
   // Deklarera variabler
-  ...
+  string text;
+  int nbrOccurences [ANTAL_BOKSTAVER];
+  const int ASCII_OFFSET = 97;
 
-  // L�s in en rad med text fr�n tangentbordet
-  ...
+  cout << "Ge en rad med text: " << '\n';
+  getline(cin, text);
 
   // Anropa funktionen berakna_histogram_abs som ber�knar histogrammet
   // och antalet bokst�ver.
-  ...
+  berakna_histogram_abs(text, nbrOccurences, ASCII_OFFSET);
 
 
   // Anropa funktionen skriv_histogram_abs som skriver ut histogrammet
-  ...
+  skriv_histogram_abs(nbrOccurences, ASCII_OFFSET);
 
   return 0;
 }
 
 //--------------------------------------------------------
 // Funktionsdefinitioner:
-...
+void berakna_histogram_abs(string text, int nbrOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET){
+  //Initialize array
+  for(int i = 0; i < ANTAL_BOKSTAVER; i++){
+    nbrOccurences[i] = 0;
+  }
 
+  //Count occurrences
+  for(int i = 0; i < text.length(); i++){
+    if(isalpha(text.at(i))){
+      nbrOccurences[int(tolower(text.at(i))) - ASCII_OFFSET]++;
+    }
+  }
+}
+
+void skriv_histogram_abs(int nbrOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET){
+  int nbrLetters;
+
+  for(int i = 0; i < ANTAL_BOKSTAVER; i++){
+    nbrLetters += nbrOccurences[i];
+  }
+
+  cout << "\nResultat för bokstäverna a-z" << "\n\n";
+  cout << "Totala antalet bokstäver: " << nbrLetters << "\n\n";
+  cout << "Bokstavsfördelning:" << "\n\n";
+
+  for(int i = 0; i < ANTAL_BOKSTAVER; i++){
+    std::cout << char(i + ASCII_OFFSET) << " : " << nbrOccurences[i] << '\n';
+  }
+}
 
 // Redovisning av uppgiften i ord.
 
