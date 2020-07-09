@@ -82,23 +82,27 @@ const double TOLK_HJALP[ANTAL_SPRAK][ANTAL_BOKSTAVER]=
 void berakna_histogram_abs(string text, int nbrOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET);
 
 // Funktionen skriv_histogram_abs
-void skriv_histogram_abs(int nbrOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET);
+void skriv_histogram_abs(string text, int nbrOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET);
 
 
 //Funktionen abs_till_rel
-void abs_till_rel(int nbrOccurences[ANTAL_BOKSTAVER]);
+void abs_till_rel(int nbrOccurences[ANTAL_BOKSTAVER], double relOccurences[ANTAL_BOKSTAVER]);
 
 // Funktionen plotta_histogram
-void plotta_histogram_rel(int relOccurences[ANTAL_BOKSTAVER]);
+void plotta_histogram_rel(double relOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET);
 
 // Funktionen tolka
-string tolka(int relOccurences[ANTAL_BOKSTAVER]);
+void tolka(int nbrOccurences[ANTAL_BOKSTAVER], double relOccurences[ANTAL_BOKSTAVER]);
 
 // Funktionen namn_pa_fil
 string namn_pa_fil();
 
 // Funktionen inlasning
 string inlasning(string fileName);
+
+int countLetters(int nbrOccurences[ANTAL_BOKSTAVER]);
+
+string getLanguage(int languageNbr);
 
 //--------------------------------------------------------
 // Huvudprogram:
@@ -107,10 +111,15 @@ int main()
 {
   const int ASCII_OFFSET = 97;
   int nbrOccurences[ANTAL_BOKSTAVER];
+  double relOccurences[ANTAL_BOKSTAVER];
   string fileName, text;
+
   fileName = namn_pa_fil();
   text = inlasning(fileName);
-  berakna_histogram_abs(text, nbrOccurences[ANTAL_BOKSTAVER], ASCII_OFFSET);
+  berakna_histogram_abs(text, nbrOccurences, ASCII_OFFSET);
+  abs_till_rel(nbrOccurences, relOccurences);
+  tolka(nbrOccurences, relOccurences);
+  plotta_histogram_rel(relOccurences, ASCII_OFFSET);
 
   return 0;
 }
@@ -131,22 +140,121 @@ void berakna_histogram_abs(string text, int nbrOccurences[ANTAL_BOKSTAVER], int 
   }
 }
 
-void skriv_histogram_abs(int nbrOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET){
+//Räknar antalet bokstäver
+int countLetters(int nbrOccurences[ANTAL_BOKSTAVER]){
   int nbrLetters;
 
   for(int i = 0; i < ANTAL_BOKSTAVER; i++){
     nbrLetters += nbrOccurences[i];
   }
 
+  return nbrLetters;
+}
+
+void skriv_histogram_abs(int nbrOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET){
+  int nbrLetters = countLetters(nbrOccurences);
+
   cout << "\nResultat för bokstäverna a-z" << "\n\n";
   cout << "Totala antalet bokstäver: " << nbrLetters << "\n\n";
   cout << "Bokstavsfördelning:" << "\n\n";
 
   for(int i = 0; i < ANTAL_BOKSTAVER; i++){
-    std::cout << char(i + ASCII_OFFSET) << " : " << nbrOccurences[i] << '\n';
+    cout << char(i + ASCII_OFFSET) << " : " << nbrOccurences[i] << '\n';
   }
 }
 
+void abs_till_rel(int nbrOccurences[ANTAL_BOKSTAVER], double relOccurences[ANTAL_BOKSTAVER]){
+  int nbrLetters = countLetters(nbrOccurences);
+
+  for(int i = 0; i < ANTAL_BOKSTAVER; i++){
+    relOccurences[i] = double(nbrOccurences[i]) / double(nbrLetters);
+  }
+}
+
+void plotta_histogram_rel(double relOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSET){
+  cout << "Bokstavsfördelning:" << "\n\n";
+
+  for(int i = 0; i < ANTAL_BOKSTAVER; i++){
+    cout << char(i + ASCII_OFFSET) << " ";
+    for(int j = 0; j < round(relOccurences[i] * 100); j++){
+      cout << '*';
+    }
+    cout << '\n';
+  }
+}
+
+string namn_pa_fil(){
+  string fileName;
+  cout << "Filnamn: ";
+  cin >> fileName;
+
+  if(fileName.rfind(".txt") == string::npos){
+    fileName += ".txt";
+  }
+
+  return fileName;
+}
+
+string inlasning(string fileName){
+  string text = "", row;
+  ifstream fin(fileName.c_str());
+
+  if(!fin){
+    cout << "Filen kunde inte öppnas" << endl;
+    exit( EXIT_FAILURE );
+  }
+
+  while(getline(fin, row)){
+      text += row;
+  }
+
+  return text;
+}
+
+void tolka(int nbrOccurences[ANTAL_BOKSTAVER], double relOccurences[ANTAL_BOKSTAVER]){
+  double sum = 0;
+  int minLanguage = 0;
+  double minSum = INT_MAX;
+
+  cout << '\n' << "Resultat för bokstäverna a-z" << "\n\n";
+  cout << "Totala antalet bokstäver: " << countLetters(nbrOccurences) << '\n';
+
+  for(int i = 0; i < ANTAL_SPRAK; i++){
+    for(int j = 0; j < ANTAL_BOKSTAVER; j++){
+      sum += (TOLK_HJALP[i][j] - relOccurences[j] * 100) * (TOLK_HJALP[i][j] - relOccurences[j] * 100);
+    }
+    if(sum < minSum){
+      minSum = sum;
+      minLanguage = i;
+    }
+    cout << getLanguage(i) << " har kvadratsumma = " << sum << '\n';
+    sum = 0;
+  }
+
+  std::cout << "Det är mest troligt att språket är " << getLanguage(minLanguage) << "\n\n";
+}
+
+string getLanguage(int languageNbr){
+  string language;
+  switch (languageNbr) {
+    case 0:
+    language = "Engelska";
+    break;
+
+    case 1:
+    language = "Franska";
+    break;
+
+    case 2:
+    language = "Svenska";
+    break;
+
+    case 3:
+    language = "Tyska";
+    break;
+  }
+  return language;
+}
 
 
 // -------------------------------------------------------
