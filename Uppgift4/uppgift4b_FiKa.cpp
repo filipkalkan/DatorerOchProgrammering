@@ -21,7 +21,7 @@ Jag har använt kompilator/editor (namn/version) g++ v.7.2.0 / Atom
 Jag har använt följande dator (PC/Mac/Annat): PC
       med operativsystemet: Windows
 
-Jag har arbetat ungefär 1 timmar med denna uppgift
+Jag har arbetat ungefär 3 timmar med denna uppgift
 ================================================================================
 */
 // Slut på kommentar
@@ -109,7 +109,7 @@ string getLanguage(int languageNbr);
 
 int main()
 {
-  const int ASCII_OFFSET = 97;
+  const int ASCII_OFFSET = 97;  //Used for mapping ascii-codes to array indices.
   int nbrOccurences[ANTAL_BOKSTAVER];
   double relOccurences[ANTAL_BOKSTAVER];
   string fileName, text;
@@ -140,7 +140,7 @@ void berakna_histogram_abs(string text, int nbrOccurences[ANTAL_BOKSTAVER], int 
   }
 }
 
-//Räknar antalet bokstäver
+//Count total number of letters
 int countLetters(int nbrOccurences[ANTAL_BOKSTAVER]){
   int nbrLetters;
 
@@ -176,7 +176,7 @@ void plotta_histogram_rel(double relOccurences[ANTAL_BOKSTAVER], int ASCII_OFFSE
 
   for(int i = 0; i < ANTAL_BOKSTAVER; i++){
     cout << char(i + ASCII_OFFSET) << " ";
-    for(int j = 0; j < round(relOccurences[i] * 100); j++){
+    for(int j = 0; j < floor((relOccurences[i] * 100 * 2) + 0.5); j++){
       cout << '*';
     }
     cout << '\n';
@@ -200,7 +200,7 @@ string inlasning(string fileName){
   ifstream fin(fileName.c_str());
 
   if(!fin){
-    cout << "Filen kunde inte öppnas" << endl;
+    cout << "Det finns ingen fil med namnet " << fileName << endl;
     exit( EXIT_FAILURE );
   }
 
@@ -265,10 +265,197 @@ string getLanguage(int languageNbr){
 Här följer programkörningar för alla testdata:
 ==============================================
 
+TESTDATA1
+Filnamn: doyle
+
+Resultat för bokstäverna a-z
+
+Totala antalet bokstäver: 12885
+Engelska har kvadratsumma = 1.75771
+Franska har kvadratsumma = 96.1956
+Svenska har kvadratsumma = 73.3371
+Tyska har kvadratsumma = 116.072
+Det är mest troligt att språket är Engelska
+
+Bokstavsfördelning:
+
+a ****************
+b ***
+c *******
+d ********
+e ************************
+f ****
+g ***
+h ************
+i ***************
+j
+k **
+l ********
+m *****
+n *************
+o ***************
+p ****
+q
+r ***********
+s *************
+t ******************
+u ******
+v **
+w ****
+x
+y *****
+z
+
+TESTDATA2
+Filnamn: goethe
+
+Resultat för bokstäverna a-z
+
+Totala antalet bokstäver: 14027
+Engelska har kvadratsumma = 107.856
+Franska har kvadratsumma = 85.205
+Svenska har kvadratsumma = 160.318
+Tyska har kvadratsumma = 1.04313
+Det är mest troligt att språket är Tyska
+
+Bokstavsfördelning:
+
+a ***********
+b ***
+c *******
+d *********
+e *********************************
+f ***
+g *******
+h ***********
+i ******************
+j
+k **
+l *******
+m ******
+n **********************
+o ****
+p *
+q
+r ************
+s **************
+t ***********
+u ********
+v **
+w ****
+x
+y *
+z ***
+
+TESTDATA3
+Filnamn: lagerlof
+
+Resultat för bokstäverna a-z
+
+Totala antalet bokstäver: 12221
+Engelska har kvadratsumma = 86.6804
+Franska har kvadratsumma = 145.722
+Svenska har kvadratsumma = 8.88258
+Tyska har kvadratsumma = 170.223
+Det är mest troligt att språket är Svenska
+
+Bokstavsfördelning:
+
+a ***********************
+b **
+c ***
+d ************
+e *******************
+f ****
+g ********
+h *******
+i ********
+j ***
+k *******
+l **********
+m *******
+n ******************
+o *********
+p ***
+q
+r ***************
+s **************
+t ******************
+u ***
+v ******
+w
+x
+y *
+z
+
+TESTDATA4
+Filnamn: verne
+
+Resultat för bokstäverna a-z
+
+Totala antalet bokstäver: 11417
+Engelska har kvadratsumma = 112.425
+Franska har kvadratsumma = 0.885142
+Svenska har kvadratsumma = 149.256
+Tyska har kvadratsumma = 90.491
+Det är mest troligt att språket är Franska
+
+Bokstavsfördelning:
+
+a ****************
+b ***
+c *******
+d ********
+e ***********************************
+f **
+g **
+h *
+i **************
+j *
+k
+l ***********
+m ******
+n ***************
+o **********
+p ******
+q **
+r **************
+s *****************
+t **************
+u ************
+v ***
+w
+x *
+y *
+z
+
+TESTDATA5
+Filnamn: hejhej
+Det finns ingen fil med namnet hejhej.txt
+
+
 ================================================================================
 Här skriver du en kort rapport om uppgiften. Ett eller ett par stycken om vad
 uppgiften gick ut på, vilka svårigheter som fanns, vad du tyckte var
 besvärligt och hur du löste problemen. Om det finns frågor att besvara i
 uppgiften ska det göras här.
+
+Det svåraste i uppgiften var att få språkklassificeringen att fungera. Anledningen är att jag från
+början hade relOccurences som en int-vektor vilket gjorde att decimalerna jag försökte hantera trunkerades.
+Detta resulterade i att jag fick fel kvadratsummor.
+
+1. I lösningsförslagen tipsar vi om att man ska skapa/ladda hem en fil med bara lite innehåll medan man testar sitt program.
+Varför, tror du?
+- Detta gjorde jag innan jag läste det i övningsförslagen. Eftersom jag skapade datan vet jag hur den ska representeras
+i diagrammet och vad förekomsten av bokstäverna är från början. Då kan jag jämföra programmets utfall med vad jag vet.
+Datan i ex. doyle.txt är lite svårare att kunna utantill.
+
+
+2. Texten i filen lagerlof.txt innehåller de svenska bokstäverna å, ä och ö. Som programet fungerar nu räknas inte dessa bokstäver alls.
+Hur skulle man gå tillväga för att också inkludera å, ä och ö i histogrammet?
+- Du behöver inte ge en program-lösning, men resonera kring hur man skulle kunna göra.
+Eftersom dessa tecken inte ligger i anslutning till a-z i ascii tabellen kan man inte använda ascii offset
+för att mappa ascii-koden till index i en array. Man får skapa specialfall för å, ä, ö där man kollar om ascii-koden
+är större än koden för 'z'. 'Ä' har till exempel ascii-koden 196.
 
 */
