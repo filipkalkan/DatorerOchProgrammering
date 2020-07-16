@@ -29,6 +29,7 @@ Jag har arbetat ungefär 3 timmar med denna uppgift
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cmath>
 using namespace std;
 
 const int MAX_KOMPISAR = 30;
@@ -54,7 +55,7 @@ class Transaktion
    bool finnsKompis( string namnet );
    bool laesEnTrans( istream &is );
    void skrivEnTrans( ostream &os );
-   string haemta_kompisar();
+   string* haemta_kompisar();
  };
 
  class Person
@@ -113,39 +114,49 @@ class PersonLista
 
  //#############FUNCTION DECLARATIONS#####################################
 int menu();
-
-
-
-//##########################################################
+void loadTransactions()
+void saveAndExit(TransaktionsLista &transList);
+void inputTransaction(TransaktionsLista &transList);
+void printAllTransactions(TransaktionsLista &transList);
+void calculateTotalCost(TransaktionsLista &transList);
+void personDebt(TransaktionsLista &transList);
+void personCredit(TransaktionsLista &transList);
+void solve(TransaktionsLista &transList);
+//##################MAIN##################################################
 int main() {
   TransaktionsLista transList;
+  cout << "Startar med att läsa från fil." << "\n\n";
   string fileName = "resa.txt";
   ifstream fin(fileName.c_str());
   transList.laesin(fin);
-  int choice = menu();
+  fin.close();
 
-  switch (choice) {
-    case 0:
-      exit (EXIT_FAILURE);
-    break;
-    case 1:
-      inputTransaction(transList);
-    break;
-    case 2:
-      printAllTransactions();
-    break;
-    case 3:
-      calculateTotalCost();
-    break;
-    case 4:
-      personDebt();
-    break;
-    case 5:
-      personCredit();
-    break;
-    case 6:
-      solve();
-    break;
+  while(true){
+    int choice = menu();
+
+    switch (choice) {
+      case 0:
+        saveAndExit(transList);
+      break;
+      case 1:
+        inputTransaction(transList);
+      break;
+      case 2:
+        printAllTransactions(transList);
+      break;
+      case 3:
+        calculateTotalCost(transList);
+      break;
+      case 4:
+        personDebt(transList);
+      break;
+      case 5:
+        personCredit(transList);
+      break;
+      case 6:
+        solve(transList);
+      break;
+    }
   }
 
   return 0;
@@ -155,8 +166,7 @@ int main() {
 int menu(){
   int choice = 0;
 
-  cout << "Startar med att läsa från fil." << "\n\n";
-  cout << "Välj i menyn nedan:" << '\n';
+  cout << "\n\n\nVälj i menyn nedan:" << '\n';
   cout << "0. Avsluta. Alla transaktioner sparas på fil." << '\n';
   cout << "1. Läs in en transaktion från tangentbordet." << '\n';
   cout << "2. Skriv ut information om alla transaktioner." << '\n';
@@ -169,35 +179,63 @@ int menu(){
   return choice;
 }
 
+void saveAndExit(TransaktionsLista &transList){
+  string fileName = "out.txt";
+  ofstream fout(fileName);
+  if(!fout.is_open()){
+    cout << "Kunde inte skriva till fil." << '\n';
+    exit(EXIT_FAILURE);
+  } else {
+    transList.skrivut(fout);
+    fout.flush();
+    cout << "Sparat på fil. Stänger program." << '\n';
+    exit(EXIT_SUCCESS);
+  }
+}
+
 void inputTransaction(TransaktionsLista &transList){
   cout << "Ange transaktion på formen DATUM TYP NAMN SUMMA ANTAL_DELTAGARE DELTAGARE...:" << '\n';
-  transList.laesin();
+  Transaktion t;
+  t.laesEnTrans(cin);
+  transList.laggTill(t);
 }
 
-void printAllTransactions(){
-
+void printAllTransactions(TransaktionsLista &transList){
+  transList.skrivut(cout);
 }
 
-void calculateTotalCost(){
-
+void calculateTotalCost(TransaktionsLista &transList){
+  cout << "Total kostnad: " << transList.totalkostnad() << '\n';
 }
 
-void personDebt(){
-
+void personDebt(TransaktionsLista &transList){
+  string name;
+  cout << "Namn: " << '\n';
+  cin >> name;
+  cout << name << " är skyldig: " << transList.aerSkyldig(name) << '\n';
 }
 
-void personCredit(){
-
+void personCredit(TransaktionsLista &transList){
+  string name;
+  cout << "Namn: " << '\n';
+  cin >> name;
+  cout << name << " ligger ute med: " << transList.liggerUteMed(name) << '\n';
 }
 
-void solve(){
-
+void solve(TransaktionsLista &transList){
+  PersonLista persList = transList.FixaPersoner();
+  cout << "Fixat personlista.\n";
+  persList.skrivUtOchFixa();
 }
 
 //############CLASS IMPLEMENTATIONS########################
 
 Transaktion::Transaktion(){
   datum = "";
+  typ = "";
+  namn = "";
+  belopp = 0;
+  ant_kompisar = 0;
   for(int i = 0; i < MAX_KOMPISAR; i++){
     kompisar[i] = "";
   }
@@ -230,12 +268,9 @@ bool Transaktion::laesEnTrans( istream &is ){
   for(int i = 0; i < ant_kompisar; i++){
     is >> kompisar[i];
   }
-  if(datum != ""){
-    return true;
-  } else {
-    return false;
-  }
+  return !is.eof();
 }
+
 void Transaktion::skrivEnTrans( ostream &os ){
   os << datum << " " << typ << " " << namn << " " << belopp << " " << ant_kompisar;
   for(int i = 0; i < ant_kompisar; i++){
@@ -244,12 +279,12 @@ void Transaktion::skrivEnTrans( ostream &os ){
   os << '\n';
 }
 
-string Transaktion::haemta_kompisar(){
+string* Transaktion::haemta_kompisar(){
   return kompisar;
 }
 
 TransaktionsLista::TransaktionsLista(){
-
+  antalTrans = 0;
 }
 
 //~TransaktionsLista();
@@ -294,40 +329,40 @@ double TransaktionsLista::aerSkyldig( string namnet ){
   double sum = 0;
   for(int i = 0; i < antalTrans; i++){
     if(trans[i].finnsKompis(namnet)){
-      sum += trans[i].haemta_belopp() / (trans[i].haemta_ant_kompisar() + 1);
+      sum += trans[i].haemta_belopp() / (trans[i].haemta_ant_kompisar());
     }
   }
   return sum;
 }
 
-//TODO
 PersonLista TransaktionsLista::FixaPersoner(){
   PersonLista persList;
 
   //Initialize and update all the person objects which made payments and add to persList.
   for(int i = 0; i < antalTrans; i++){
     Transaktion *currentTrans = &trans[i];
-    if(!persList.finnsPerson(*currentTrans.haemta_namn()){
-      Person pers(*currentTrans.haemta_namn(), *currentTrans.haemta_belopp(), 0);
+    if(!persList.finnsPerson(currentTrans->haemta_namn())){
+      Person pers(currentTrans->haemta_namn(), currentTrans->haemta_belopp(), 0);
       persList.laggTillEn(pers);
     } else {
-      persList.addCredit(*currentTrans.haemta_namn(), *currentTrans.haemta_belopp());
+      persList.addCredit(currentTrans->haemta_namn(), currentTrans->haemta_belopp());
     }
   }
 
   //Initialize and update remaining person objects and add debts.
   for(int i = 0; i < antalTrans; i++){
     Transaktion *currentTrans = &trans[i];
-    string *friends = currentTrans.haemta_kompisar();
-    for(int j = 0; j < *currentTrans.haemta_ant_kompisar(); j++){
+    string *friends = currentTrans->haemta_kompisar();
+    for(int j = 0; j < currentTrans->haemta_ant_kompisar(); j++){
       if(!persList.finnsPerson(friends[j])){
-        Person pers(friends[j].haemta_namn(), 0, *currentTrans.haemta_belopp() / (*currentTrans.haemta_ant_kompisar() + 1));
+        Person pers(friends[j], 0, currentTrans->haemta_belopp() / (currentTrans->haemta_ant_kompisar()));
         persList.laggTillEn(pers);
       } else {
-        persList.addDebt(friends[j].haemta_namn(), *currentTrans.haemta_belopp() / (*currentTrans.haemta_ant_kompisar() + 1);
+        persList.addDebt(friends[j], currentTrans->haemta_belopp() / (currentTrans->haemta_ant_kompisar()));
       }
     }
   }
+  return persList;
 }
 
 Person::Person(){
@@ -360,7 +395,7 @@ void Person::addCredit(double amount){
 }
 
 void Person::skrivUt(){
-  cout << namn << " ligger ut med: " << betalat_andras << " och är skyldig: " << skyldig;
+  cout << namn << " ligger ute med: " << betalat_andras << " och är skyldig: " << skyldig;
   if(betalat_andras > skyldig){
     cout << ". Skall ha " << (betalat_andras - skyldig) << " från potten!" << '\n';
   } else {
@@ -369,7 +404,7 @@ void Person::skrivUt(){
 }
 
 PersonLista::PersonLista(){
-
+  antal_pers = 0;
 }
 
 //~PersonLista();
@@ -384,10 +419,12 @@ void PersonLista::skrivUtOchFixa(){
     pers[i].skrivUt();
   }
 
-  if(summaBetalat() == summaSkyldig()){
+  if(round(summaBetalat()) == round(summaSkyldig())){
     cout << "Utlägg och skyldigheter stämmer överens." << '\n';
   } else {
     cout << "Utlägg och skyldigheter stämmer INTE överens." << '\n';
+    std::cout << "Betalat: " << summaBetalat() << '\n';
+    std::cout << "Skyldigheter: " << summaSkyldig() << '\n';
   }
 }
 
