@@ -114,7 +114,7 @@ class PersonLista
 
  //#############FUNCTION DECLARATIONS#####################################
 int menu();
-void loadTransactions()
+void loadTransactions(TransaktionsLista &transList);
 void saveAndExit(TransaktionsLista &transList);
 void inputTransaction(TransaktionsLista &transList);
 void printAllTransactions(TransaktionsLista &transList);
@@ -126,10 +126,7 @@ void solve(TransaktionsLista &transList);
 int main() {
   TransaktionsLista transList;
   cout << "Startar med att läsa från fil." << "\n\n";
-  string fileName = "resa.txt";
-  ifstream fin(fileName.c_str());
-  transList.laesin(fin);
-  fin.close();
+  loadTransactions(transList);
 
   while(true){
     int choice = menu();
@@ -179,6 +176,15 @@ int menu(){
   return choice;
 }
 
+//Loads transactions stored in a txt file.
+void loadTransactions(TransaktionsLista &transList){
+  string fileName = "resaliten.txt";
+  ifstream fin(fileName.c_str());
+  transList.laesin(fin);
+  fin.close();
+}
+
+//Saves all transactions to out.txt and exits program.
 void saveAndExit(TransaktionsLista &transList){
   string fileName = "out.txt";
   ofstream fout(fileName);
@@ -193,6 +199,7 @@ void saveAndExit(TransaktionsLista &transList){
   }
 }
 
+//Lets user input a transaction and adds it to a transaction list.
 void inputTransaction(TransaktionsLista &transList){
   cout << "Ange transaktion på formen DATUM TYP NAMN SUMMA ANTAL_DELTAGARE DELTAGARE...:" << '\n';
   Transaktion t;
@@ -200,14 +207,17 @@ void inputTransaction(TransaktionsLista &transList){
   transList.laggTill(t);
 }
 
+//Prints all transactions in the console.
 void printAllTransactions(TransaktionsLista &transList){
   transList.skrivut(cout);
 }
 
+//Calculates and prints the total cost of all transactions.
 void calculateTotalCost(TransaktionsLista &transList){
   cout << "Total kostnad: " << transList.totalkostnad() << '\n';
 }
 
+//Lets user input a name and prints total debt for the person.
 void personDebt(TransaktionsLista &transList){
   string name;
   cout << "Namn: " << '\n';
@@ -215,6 +225,7 @@ void personDebt(TransaktionsLista &transList){
   cout << name << " är skyldig: " << transList.aerSkyldig(name) << '\n';
 }
 
+//Lets user input a name and prints total credit for the person.
 void personCredit(TransaktionsLista &transList){
   string name;
   cout << "Namn: " << '\n';
@@ -222,9 +233,10 @@ void personCredit(TransaktionsLista &transList){
   cout << name << " ligger ute med: " << transList.liggerUteMed(name) << '\n';
 }
 
+//Prints what all participants should put/get from the pot. Also verifies that expences and
+//income are equal.
 void solve(TransaktionsLista &transList){
   PersonLista persList = transList.FixaPersoner();
-  cout << "Fixat personlista.\n";
   persList.skrivUtOchFixa();
 }
 
@@ -242,6 +254,7 @@ Transaktion::Transaktion(){
 }
 
 //Transaktion::~Transaktion();
+
 string Transaktion::haemta_namn(){
   return namn;
 }
@@ -283,6 +296,8 @@ string* Transaktion::haemta_kompisar(){
   return kompisar;
 }
 
+//#####################TRANSAKTIONSLISTA############################
+
 TransaktionsLista::TransaktionsLista(){
   antalTrans = 0;
 }
@@ -297,6 +312,7 @@ void TransaktionsLista::laesin( istream & is ){
 }
 
 void TransaktionsLista::skrivut( ostream & os ){
+  os << "Antal transaktioner: " << antalTrans << '\n';
   for(int i = 0; i < antalTrans; i++){
     trans[i].skrivEnTrans(os);
   }
@@ -365,6 +381,8 @@ PersonLista TransaktionsLista::FixaPersoner(){
   return persList;
 }
 
+//#######################PERSON##########################
+
 Person::Person(){
 
 }
@@ -387,9 +405,12 @@ double Person::haemta_skyldig(){
   return skyldig;
 }
 
+//Adds a debt to this person.
 void Person::addDebt(double amount){
   skyldig += amount;
 }
+
+//Adds a credit to this person.
 void Person::addCredit(double amount){
   betalat_andras += amount;
 }
@@ -402,6 +423,8 @@ void Person::skrivUt(){
     cout << ". Skall lägga " << (skyldig - betalat_andras) << " till potten!" << '\n';
   }
 }
+
+//############################PERSONLISTA#####################################
 
 PersonLista::PersonLista(){
   antal_pers = 0;
@@ -453,6 +476,7 @@ bool PersonLista::finnsPerson(const string& namn){
   return false;
 }
 
+//Adds a debt to person with name namn.
 void PersonLista::addDebt(string namn, double amount){
   for(int i = 0; i < antal_pers; i++){
     if(pers[i].haemta_namn() == namn){
@@ -462,6 +486,7 @@ void PersonLista::addDebt(string namn, double amount){
   }
 }
 
+//Adds a credit to a person with name namn.
 void PersonLista::addCredit(string namn, double amount){
   for(int i = 0; i < antal_pers; i++){
     if(pers[i].haemta_namn() == namn){
@@ -475,6 +500,69 @@ void PersonLista::addCredit(string namn, double amount){
 ================================================================================
 Här följer programkörningar för alla testdata:
 ==============================================
+
+TESTDATA1
+
+Välj i menyn nedan:
+0. Avsluta. Alla transaktioner sparas på fil.
+1. Läs in en transaktion från tangentbordet.
+2. Skriv ut information om alla transaktioner.
+3. Beräkna totala kostnaden.
+4. Hur mycket är en viss person skyldig?
+5. Hur mycket ligger en viss person ute med?
+6. Lista alla personer mm och FIXA!!!
+2
+Antal transaktioner: 10
+050615 transp Eva 6000 5 Bosse Kristin Paul Torsten Stina
+050721 mat Eva 300 2 Bosse Kristin
+050721 mat Paul 400 2 Torsten Stina
+050721 transp Bosse 5000 3 Eva Kristin Paul
+050721 transp Stina 5000 1 Torsten
+050722 boende Kristin 200 1 Eva
+050722 mat Eva 300 2 Kristin Bosse
+050723 mat Torsten 300 2 Paul Stina
+050724 mat Paul 200 1 Stina
+050725 transp Eva 600 3 Bosse Kristin Paul
+
+
+
+Välj i menyn nedan:
+0. Avsluta. Alla transaktioner sparas på fil.
+1. Läs in en transaktion från tangentbordet.
+2. Skriv ut information om alla transaktioner.
+3. Beräkna totala kostnaden.
+4. Hur mycket är en viss person skyldig?
+5. Hur mycket ligger en viss person ute med?
+6. Lista alla personer mm och FIXA!!!
+6
+Eva ligger ute med: 7200 och är skyldig: 1866.67. Skall ha 5333.33 från potten!
+Paul ligger ute med: 600 och är skyldig: 3216.67. Skall lägga 2616.67 till potten!
+Bosse ligger ute med: 5000 och är skyldig: 1700. Skall ha 3300 från potten!
+Stina ligger ute med: 5000 och är skyldig: 1750. Skall ha 3250 från potten!
+Kristin ligger ute med: 200 och är skyldig: 3366.67. Skall lägga 3166.67 till potten!
+Torsten ligger ute med: 300 och är skyldig: 6400. Skall lägga 6100 till potten!
+Utlägg och skyldigheter stämmer överens.
+
+TESTDATA2
+
+Startar med att läsa från fil.
+
+
+
+
+Välj i menyn nedan:
+0. Avsluta. Alla transaktioner sparas på fil.
+1. Läs in en transaktion från tangentbordet.
+2. Skriv ut information om alla transaktioner.
+3. Beräkna totala kostnaden.
+4. Hur mycket är en viss person skyldig?
+5. Hur mycket ligger en viss person ute med?
+6. Lista alla personer mm och FIXA!!!
+6
+Eva ligger ute med: 1200 och är skyldig: 200. Skall ha 1000 från potten!
+Bosse ligger ute med: 200 och är skyldig: 1200. Skall lägga 1000 till potten!
+Utlägg och skyldigheter stämmer överens.
+
 
 ================================================================================
 Här skriver du en kort rapport om uppgiften. Ett eller ett par stycken om vad
