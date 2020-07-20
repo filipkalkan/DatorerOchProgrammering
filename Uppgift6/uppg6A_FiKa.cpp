@@ -21,7 +21,7 @@ Jag har använt kompilator/editor (namn/version) g++ v.7.2.0 / Atom
 Jag har använt följande dator (PC/Mac/Annat): PC
       med operativsystemet: Windows
 
-Jag har arbetat ungefär 3 timmar med denna uppgift
+Jag har arbetat ungefär 8 timmar med denna uppgift
 ================================================================================
 */
 // Slut på kommentar
@@ -102,7 +102,7 @@ class PersonLista
 
  public:
    TransaktionsLista();
-   //~TransaktionsLista();
+   ~TransaktionsLista();
    void laesin( istream & is );
    void skrivut( ostream & os );
    void laggTill( Transaktion & t );
@@ -569,4 +569,7 @@ Här skriver du en kort rapport om uppgiften. Ett eller ett par stycken om vad
 uppgiften gick ut på, vilka svårigheter som fanns, vad du tyckte var
 besvärligt och hur du löste problemen. Om det finns frågor att besvara i
 uppgiften ska det göras här.
+
+Implementeringen gick bra. Jag fick problem med segmentation error några gånger.
+Detta berodde på att jag glömt initiera vissa variabler i konstruktorerna.
 */
