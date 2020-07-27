@@ -127,9 +127,10 @@ int main() {
   TransaktionsLista transList;
   cout << "Startar med att läsa från fil." << "\n\n";
   loadTransactions(transList);
+  int choice = 1;
 
-  while(true){
-    int choice = menu();
+  while(choice != 0){
+    choice = menu();
 
     switch (choice) {
       case 0:

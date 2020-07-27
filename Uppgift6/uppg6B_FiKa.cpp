@@ -32,10 +32,6 @@ Jag har arbetat ungefär 1 timmar med denna uppgift
 #include <cmath>
 using namespace std;
 
-const int MAX_KOMPISAR = 30;
-const int MAX_TRANSAKTIONER = 30;
-const int MAX_PERSONER = 30;
-
 class Transaktion
  {
   private:
@@ -128,9 +124,10 @@ int main() {
   TransaktionsLista transList;
   cout << "Startar med att läsa från fil." << "\n\n";
   loadTransactions(transList);
+  int choice = 1;
 
-  while(true){
-    int choice = menu();
+  while(choice != 0){
+    choice = menu();
 
     switch (choice) {
       case 0:
@@ -285,7 +282,7 @@ int Transaktion::haemta_ant_kompisar(){
 }
 
 bool Transaktion::finnsKompis( string namnet ){
-  for(int i = 0; i < MAX_KOMPISAR; i++){
+  for(int i = 0; i < ant_kompisar; i++){
     if(kompisar[i] == namnet){
       return true;
     }
@@ -558,7 +555,9 @@ if (this != &t) kontrollerar att this och t inte är samma objekt. I så fall
 behöver nämligen inte alla operationer i blockat utföras. Det har ingen effekt då.
 
 Implementeringen av dynamiska arrayer flöt på ganska bra. Det var inga större konstigheter.
-Jag anser dock inte att det behövs någon kopieringskonstruktor i mitt program.
-Jag kan inte se var det skulle hjälpa.
+Kopieringskonstruktorn används eftersom vi skapar en ny array med transaktionsobjekt
+varje gång vi lägger till en transaktion. Vi behöver här skapa nya identiska transaktionsobjekt
+eftersom platsen som de gamla objekten ligger på deallokeras i samband med skapandet av
+den nya arrayen.
 
 */
